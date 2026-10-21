@@ -1,0 +1,35 @@
+name: Snapshot live site
+# Скачивает живой сайт https://thepalms.uz в папку docs/ (статичная копия для GitHub Pages).
+# Запускается вручную (Actions → Snapshot live site → Run workflow) или при изменении этого файла.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/snapshot.yml']
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mirror https://thepalms.uz
+        run: |
+          rm -rf mirror && mkdir mirror && cd mirror
+          wget --mirror --page-requisites --adjust-extension --convert-links \
+            --no-host-directories --restrict-file-names=windows -e robots=off \
+            --reject-regex '(wp-json|xmlrpc|wp-login|wp-admin|/feed/|/comments/feed|oembed|\?p=|\?replytocom)' \
+            --user-agent 'Mozilla/5.0 (snapshot)' --tries=3 --timeout=30 \
+            https://thepalms.uz/ || echo "wget exit $?"
+          find . -type f | sed 's|^\./||' | sort > ../file-list.txt
+          du -sh . ; wc -l ../file-list.txt
+      - name: Publish into docs/
+        run: |
+          rm -rf docs && mv mirror docs
+          touch docs/.nojekyll
+          echo "thepalms.uz" > docs/CNAME
+          git config user.name "snapshot-bot"
+          git config user.email "snapshot-bot@users.noreply.github.com"
+          git add -A docs file-list.txt
+          git commit -m "Snapshot of https://thepalms.uz ($(date -u +%F))" || echo "no changes"
+          git push
