@@ -1,0 +1,16 @@
+<!-- Static copy: the WordPress contact form cannot post to a server, so it opens an e-mail to the hostel instead. -->
+<script>
+document.addEventListener('submit', function (e) {
+  var form = e.target;
+  if (!form.classList || !form.classList.contains('elementor-form')) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  function v(name) { var el = form.querySelector('[name="' + name + '"]'); return el ? el.value.trim() : ''; }
+  var body = 'Name: ' + v('form_fields[name]') + '\n' +
+             'Phone: ' + v('form_fields[field_e16c8f0]') + '\n' +
+             'Email: ' + v('form_fields[email]') + '\n\n' +
+             v('form_fields[message]');
+  window.location.href = 'mailto:info@thepalms.uz?subject=' + encodeURIComponent('Request from thepalms.uz') +
+                         '&body=' + encodeURIComponent(body);
+}, true);
+</script>

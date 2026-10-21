@@ -1,0 +1,7 @@
+/wp-content/uploads/2021/05/thumb_1461_1140_0_0_0_auto-1.jpg
+/wp-content/uploads/2021/05/IMG_3126-0-0-0-0-1592392591.jpg
+/wp-content/uploads/2021/05/1560988826_317_0_2365_2048_1920x0_80_0_0_4db1b0cad9d15a2a4dde38e75708fea5.jpg
+/wp-content/uploads/2021/05/Registan-Square-Samarkand-1.jpg
+/wp-content/plugins/premium-addons-for-elementor/assets/frontend/min-js/premium-eq-height.min.js
+/wp-includes/js/wp-emoji-release.min.js
+/wp-content/plugins/elementor-pro/modules/lottie/assets/animations/default.json

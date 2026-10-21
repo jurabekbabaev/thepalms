@@ -1,11 +1,16 @@
 name: Snapshot live site
 # Скачивает живой сайт https://thepalms.uz в папку docs/ (статичная копия для GitHub Pages).
-# Запускается вручную (Actions → Snapshot live site → Run workflow) или при изменении этого файла.
+# Запуск: вкладка Actions → Snapshot live site → Run workflow, или при изменении файлов ниже.
+# ВНИМАНИЕ: после переключения домена на GitHub Pages повторный запуск скачает уже саму копию.
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/snapshot.yml']
+    paths:
+      - '.github/workflows/snapshot.yml'
+      - 'postprocess.py'
+      - 'extra-assets.txt'
+      - 'inject.html'
 permissions:
   contents: write
 jobs:
@@ -21,8 +26,17 @@ jobs:
             --reject-regex '(wp-json|xmlrpc|wp-login|wp-admin|/feed/|/comments/feed|oembed|\?p=|\?replytocom)' \
             --user-agent 'Mozilla/5.0 (snapshot)' --tries=3 --timeout=30 \
             https://thepalms.uz/ || echo "wget exit $?"
-          find . -type f | sed 's|^\./||' | sort > ../file-list.txt
-          du -sh . ; wc -l ../file-list.txt
+      - name: Fetch assets that are loaded by JavaScript
+        run: |
+          grep -v '^\s*$' extra-assets.txt | while read -r p; do
+            mkdir -p "mirror$(dirname "$p")"
+            wget -q -O "mirror$p" "https://thepalms.uz$p" && echo "ok $p" || { echo "MISSING $p"; rm -f "mirror$p"; }
+          done
+      - name: Clean up for GitHub Pages
+        run: |
+          if [ -f inject.html ]; then python3 postprocess.py mirror thepalms.uz inject.html; else python3 postprocess.py mirror thepalms.uz; fi
+          (cd mirror && find . -type f | sed 's|^\./||' | sort) > file-list.txt
+          du -sh mirror; wc -l file-list.txt
       - name: Publish into docs/
         run: |
           rm -rf docs && mv mirror docs
