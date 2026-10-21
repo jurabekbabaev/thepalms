@@ -23,6 +23,11 @@ ASSET_EXT = r"(?:css|js|json|woff2?|ttf|eot|svg|png|jpe?g|gif|webp|ico|mp4)"
 def main():
     docs, domain = sys.argv[1], sys.argv[2]
     inject = open(sys.argv[3], encoding="utf-8").read() if len(sys.argv) > 3 else ""
+    # Optional replacements.json: [["old text", "new text"], ...] applied to HTML pages
+    replacements = []
+    if os.path.exists("replacements.json"):
+        import json
+        replacements = json.load(open("replacements.json", encoding="utf-8"))
 
     # 1. rename "name.ext@query[.ext]" -> "name.ext"
     renamed = 0
@@ -63,6 +68,9 @@ def main():
             new = ref_query.sub(r"\1", text)
             new = ref_stub.sub(r"\1", new)
             new = http_abs.sub(lambda m: "https:" + m.group(1) + domain, new)
+            if f.endswith(".html"):
+                for old, rep in replacements:
+                    new = new.replace(old, rep)
             if inject and f.endswith(".html") and "</body>" in new and inject not in new:
                 new = new.replace("</body>", inject + "\n</body>", 1)
             if new != text:

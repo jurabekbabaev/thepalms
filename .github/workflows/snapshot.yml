@@ -11,6 +11,7 @@ on:
       - 'postprocess.py'
       - 'extra-assets.txt'
       - 'inject.html'
+      - 'replacements.json'
 permissions:
   contents: write
 jobs:
